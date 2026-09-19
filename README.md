@@ -2,7 +2,7 @@
 
 A private, static web application for turning one or more electricity-usage CSV exports into daily, weekday, and hourly insights. Parsing and aggregation happen entirely inside the browser; files are never uploaded.
 
-The dashboard also includes a tariff calculator with a monthly base price, seasonal and time-based energy prices, a fallback price, and configurable net/gross tax handling. Monthly base prices are prorated across the calendar days covered by the readings.
+The dashboard also includes a tariff calculator with a monthly base price, recurring date and time-based energy prices, a fallback price, and configurable net/gross tax handling. Multiple named tariffs can be entered and compared against the same usage data, with the lowest gross total highlighted. Monthly base prices are prorated across the calendar days covered by the readings.
 
 ## Run locally
 

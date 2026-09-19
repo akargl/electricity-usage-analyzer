@@ -184,13 +184,30 @@ footer p:last-child { text-align: right; }
 .pricing-heading h2 { margin: 0 0 5px; font-size: 22px; letter-spacing: -.04em; }
 .pricing-heading p { margin: 0; color: var(--muted); font-size: 10px; }
 .local-calc-badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 99px; color: #52766d; background: #e9f0ea; white-space: nowrap; font-size: 9px; font-weight: 750; }
+.tariff-comparison { padding: 20px 25px 23px; border: 1px solid var(--line); border-top: 0; background: #f7f7f1; }
+.comparison-heading { margin-bottom: 13px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.comparison-heading h3 { margin: 0 0 4px; font-size: 13px; }
+.comparison-heading p { margin: 0; color: var(--muted); font-size: 9px; }
+.add-tariff-button { min-height: 32px; padding: 0 11px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #b8cac3; border-radius: 7px; color: var(--forest); background: #fff; cursor: pointer; font-size: 9px; font-weight: 750; }
+.comparison-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 9px; }
+.comparison-card { min-width: 0; min-height: 92px; position: relative; padding: 13px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; border: 1px solid #d8ddd7; border-radius: 9px; text-align: left; color: var(--ink); background: #fff; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.comparison-card:hover { transform: translateY(-1px); border-color: #9db5ad; }
+.comparison-card.active { border-color: #588078; box-shadow: 0 0 0 2px rgba(88, 128, 120, .12); background: #f9fcf8; }
+.comparison-card-name { max-width: calc(100% - 58px); overflow: hidden; color: #65756f; font-size: 9px; font-weight: 750; white-space: nowrap; text-overflow: ellipsis; }
+.comparison-card > strong { font-size: 21px; letter-spacing: -.04em; }
+.comparison-card > small { color: #87928e; font-size: 8px; }
+.comparison-card.active > small { color: #52776e; }
+.lowest-badge { position: absolute; top: 10px; right: 10px; padding: 4px 6px; border-radius: 99px; color: #5f6c2f; background: #edf3cf; font-size: 7px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
 .pricing-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr); }
 .pricing-form { min-width: 0; padding: 25px; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 0 12px; background: rgba(252, 251, 247, .96); }
 .pricing-form-intro { margin-bottom: 20px; }
-.pricing-form-intro > div { display: flex; align-items: center; gap: 9px; }
+.pricing-form-intro-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .pricing-form h3, .pricing-result h3 { margin: 0; font-size: 13px; letter-spacing: -.02em; }
 .pricing-form-intro p, .tariff-rules-heading p { margin: 5px 0 0; color: var(--muted); font-size: 9px; }
 .starter-badge { padding: 4px 7px; border-radius: 99px; color: #6d7438; background: #eff3d8; font-size: 8px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
+.delete-tariff-button { display: inline-flex; align-items: center; gap: 5px; border: 0; color: #8d5b52; background: transparent; cursor: pointer; font-size: 8px; font-weight: 750; }
+.tariff-name-field { margin-top: 15px !important; display: block; }
+.pricing-form .tariff-name-field input { height: 44px; color: var(--ink); font-size: 16px; font-weight: 700; letter-spacing: -.02em; background: #f9faf6; }
 .pricing-basics { display: grid; grid-template-columns: 1fr .72fr 1.1fr; gap: 12px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
 .pricing-form label, .pricing-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 .pricing-form label > span:first-child, .pricing-form legend { display: block; margin-bottom: 7px; color: #52635e; font-size: 9px; font-weight: 750; }
@@ -311,7 +328,11 @@ footer p:last-child { text-align: right; }
   .pricing-heading { align-items: flex-start; flex-direction: column; }
   .pricing-title-wrap { align-items: flex-start; }
   .local-calc-badge { margin-left: 58px; }
+  .tariff-comparison { padding: 17px 15px; }
+  .comparison-heading { align-items: flex-start; }
+  .comparison-cards { grid-template-columns: 1fr; }
   .pricing-form { padding: 19px 15px; }
+  .pricing-form-intro-title { align-items: flex-start; }
   .pricing-basics { grid-template-columns: 1fr 1fr; }
   .pricing-basics fieldset { grid-column: 1 / -1; }
   .tariff-rule-fields { grid-template-columns: 1fr; }

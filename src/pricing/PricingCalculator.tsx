@@ -1,8 +1,9 @@
 import { Calculator, CirclePlus, Info, ReceiptText, ShieldCheck, Trash2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Reading } from '../domain/types'
 import { numberFormat } from '../shared/formatters'
-import { calculatePricing, parseRecurringDate } from './calculatePricing'
+import { parseRecurringDate } from './calculatePricing'
+import { createPricingResultCache } from './pricingCache'
 import { defaultPricingConfig, type PricingConfig, type TariffRule } from './types'
 
 const currency = new Intl.NumberFormat(undefined, {
@@ -17,23 +18,81 @@ interface Props {
   timeZone: string
 }
 
+interface TariffPlan {
+  id: string
+  name: string
+  config: PricingConfig
+}
+
 function nextRuleId() {
   return `rate-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
 }
 
+function initialTariff(): TariffPlan {
+  return {
+    id: 'tariff-1',
+    name: 'Tariff 1',
+    config: {
+      ...defaultPricingConfig,
+      rules: defaultPricingConfig.rules.map((rule) => ({ ...rule })),
+    },
+  }
+}
+
+interface TariffNameFieldProps {
+  name: string
+  onCommit: (name: string) => void
+}
+
+function TariffNameField({ name, onCommit }: TariffNameFieldProps) {
+  const [draft, setDraft] = useState(name)
+
+  useEffect(() => setDraft(name), [name])
+
+  return (
+    <label className="tariff-name-field">
+      <span>Tariff name</span>
+      <input
+        aria-label="Tariff name"
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={() => { if (draft !== name) onCommit(draft) }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            event.currentTarget.blur()
+          }
+        }}
+      />
+    </label>
+  )
+}
+
 export function PricingCalculator({ readings, timeZone }: Props) {
-  const [config, setConfig] = useState<PricingConfig>(defaultPricingConfig)
-  const result = useMemo(() => calculatePricing(readings, timeZone, config), [readings, timeZone, config])
+  const [tariffs, setTariffs] = useState<TariffPlan[]>(() => [initialTariff()])
+  const [selectedTariffId, setSelectedTariffId] = useState('tariff-1')
+  const getPricingResult = useMemo(() => createPricingResultCache(readings, timeZone), [readings, timeZone])
+  const tariffResults = tariffs.map((tariff) => ({ tariff, result: getPricingResult(tariff.config) }))
+  const selectedTariff = tariffs.find((tariff) => tariff.id === selectedTariffId) ?? tariffs[0]
+  const selectedResult = tariffResults.find(({ tariff }) => tariff.id === selectedTariff.id)?.result
+  const config = selectedTariff.config
 
   function update<K extends keyof PricingConfig>(key: K, value: PricingConfig[K]) {
-    setConfig((current) => ({ ...current, [key]: value }))
+    setTariffs((current) => current.map((tariff) => tariff.id === selectedTariff.id
+      ? { ...tariff, config: { ...tariff.config, [key]: value } }
+      : tariff))
   }
 
   function updateRule<K extends keyof TariffRule>(id: string, key: K, value: TariffRule[K]) {
-    setConfig((current) => ({
-      ...current,
-      rules: current.rules.map((rule) => rule.id === id ? { ...rule, [key]: value } : rule),
-    }))
+    setTariffs((current) => current.map((tariff) => tariff.id === selectedTariff.id
+      ? {
+          ...tariff,
+          config: {
+            ...tariff.config,
+            rules: tariff.config.rules.map((rule) => rule.id === id ? { ...rule, [key]: value } : rule),
+          },
+        }
+      : tariff))
   }
 
   function addRule() {
@@ -47,9 +106,36 @@ export function PricingCalculator({ readings, timeZone }: Props) {
     update('rules', config.rules.filter((rule) => rule.id !== id))
   }
 
-  if (!result) return null
+  function addTariff() {
+    const id = `tariff-${Date.now()}`
+    const newTariff: TariffPlan = {
+      id,
+      name: `Tariff ${tariffs.length + 1}`,
+      config: {
+        ...config,
+        rules: config.rules.map((rule) => ({ ...rule, id: nextRuleId() })),
+      },
+    }
+    setTariffs((current) => [...current, newTariff])
+    setSelectedTariffId(id)
+  }
 
-  const maxAllocation = Math.max(...result.allocations.map((allocation) => allocation.kwh), 1)
+  function removeSelectedTariff() {
+    if (tariffs.length === 1) return
+    const remaining = tariffs.filter((tariff) => tariff.id !== selectedTariff.id)
+    setTariffs(remaining)
+    setSelectedTariffId(remaining[0].id)
+  }
+
+  function updateTariffName(name: string) {
+    setTariffs((current) => current.map((tariff) => tariff.id === selectedTariff.id ? { ...tariff, name } : tariff))
+  }
+
+  if (!selectedResult) return null
+
+  const comparableResults = tariffResults.filter((entry): entry is typeof entry & { result: NonNullable<typeof entry.result> } => entry.result !== null)
+  const cheapestGross = Math.min(...comparableResults.map(({ result }) => result.grossTotal))
+  const maxAllocation = Math.max(...selectedResult.allocations.map((allocation) => allocation.kwh), 1)
   const basisLabel = config.priceBasis === 'net' ? 'net' : 'gross'
 
   return (
@@ -66,11 +152,41 @@ export function PricingCalculator({ readings, timeZone }: Props) {
         <span className="local-calc-badge"><ShieldCheck size={14} /> Calculated locally</span>
       </div>
 
+      <div className="tariff-comparison">
+        <div className="comparison-heading">
+          <div><h3>Compare tariffs</h3><p>Gross totals for the same usage and timeframe.</p></div>
+          <button type="button" className="add-tariff-button" onClick={addTariff}><CirclePlus size={15} /> Add tariff</button>
+        </div>
+        <div className="comparison-cards">
+          {comparableResults.map(({ tariff, result }) => {
+            const difference = result.grossTotal - cheapestGross
+            const isLowest = Math.abs(difference) < 0.005
+            return (
+              <button
+                type="button"
+                className={`comparison-card ${tariff.id === selectedTariff.id ? 'active' : ''}`}
+                aria-pressed={tariff.id === selectedTariff.id}
+                onClick={() => setSelectedTariffId(tariff.id)}
+                key={tariff.id}
+              >
+                <span className="comparison-card-name">{tariff.name || 'Unnamed tariff'}</span>
+                <strong>{currency.format(result.grossTotal)}</strong>
+                <small>{tariffs.length === 1 ? 'Add another tariff to compare' : isLowest ? 'Lowest total' : `+${currency.format(difference)}`}</small>
+                {tariffs.length > 1 && isLowest && <span className="lowest-badge">Best price</span>}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       <div className="pricing-layout">
         <form className="pricing-form" onSubmit={(event) => event.preventDefault()}>
           <div className="pricing-form-intro">
-            <div><h3>Tariff details</h3><span className="starter-badge">Starter tariff</span></div>
-            <p>The example time bands are prefilled—review them against your contract.</p>
+            <div className="pricing-form-intro-title">
+              <div><h3>Tariff details</h3><p>Edit the selected tariff. New tariffs start as a copy of it.</p></div>
+              {tariffs.length > 1 && <button type="button" className="delete-tariff-button" onClick={removeSelectedTariff}><Trash2 size={14} /> Remove tariff</button>}
+            </div>
+            <TariffNameField key={selectedTariff.id} name={selectedTariff.name} onCommit={updateTariffName} />
           </div>
 
           <div className="pricing-basics">
@@ -159,21 +275,21 @@ export function PricingCalculator({ readings, timeZone }: Props) {
 
         <aside className="pricing-result" aria-live="polite">
           <div className="receipt-mark"><ReceiptText size={19} /></div>
-          <span className="result-label">Estimated total</span>
-          <strong className="result-total">{currency.format(result.grossTotal)}</strong>
+          <span className="result-label">Estimated total · {selectedTariff.name || 'Unnamed tariff'}</span>
+          <strong className="result-total">{currency.format(selectedResult.grossTotal)}</strong>
           <span className="result-tax-note">Gross · including {numberFormat.format(config.taxPercent)}% tax</span>
 
           <div className="cost-breakdown">
-            <div><span>Energy usage</span><strong>{currency.format(result.energyInputCost)}</strong><small>{basisLabel}</small></div>
-            <div><span>Prorated base price</span><strong>{currency.format(result.baseInputCost)}</strong><small>{basisLabel}</small></div>
-            <div className="breakdown-divider"><span>Net total</span><strong>{currency.format(result.netTotal)}</strong></div>
-            <div><span>Tax</span><strong>{currency.format(result.taxAmount)}</strong></div>
-            <div className="gross-row"><span>Gross total</span><strong>{currency.format(result.grossTotal)}</strong></div>
+            <div><span>Energy usage</span><strong>{currency.format(selectedResult.energyInputCost)}</strong><small>{basisLabel}</small></div>
+            <div><span>Prorated base price</span><strong>{currency.format(selectedResult.baseInputCost)}</strong><small>{basisLabel}</small></div>
+            <div className="breakdown-divider"><span>Net total</span><strong>{currency.format(selectedResult.netTotal)}</strong></div>
+            <div><span>Tax</span><strong>{currency.format(selectedResult.taxAmount)}</strong></div>
+            <div className="gross-row"><span>Gross total</span><strong>{currency.format(selectedResult.grossTotal)}</strong></div>
           </div>
 
           <div className="rate-allocation">
             <h3>Usage by price band</h3>
-            {result.allocations.map((allocation) => (
+            {selectedResult.allocations.map((allocation) => (
               <div className="allocation-row" key={allocation.key}>
                 <div><span>{allocation.label}</span><strong>{numberFormat.format(allocation.kwh)} kWh</strong></div>
                 <div className="allocation-track"><span style={{ width: `${Math.max(3, allocation.kwh / maxAllocation * 100)}%` }} /></div>
@@ -182,7 +298,7 @@ export function PricingCalculator({ readings, timeZone }: Props) {
             ))}
           </div>
 
-          <div className="proration-note"><Info size={14} /> Base price prorated across {result.coveredDays} covered calendar {result.coveredDays === 1 ? 'day' : 'days'}.</div>
+          <div className="proration-note"><Info size={14} /> Base price prorated across {selectedResult.coveredDays} covered calendar {selectedResult.coveredDays === 1 ? 'day' : 'days'}.</div>
         </aside>
       </div>
     </section>
