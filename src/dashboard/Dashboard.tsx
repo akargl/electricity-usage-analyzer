@@ -3,15 +3,17 @@ import type { AnalysisResult, ParseResult } from '../domain/types'
 import { Charts } from './Charts'
 import { DataQuality } from './DataQuality'
 import { SummaryCards } from './SummaryCards'
+import { PricingCalculator } from '../pricing/PricingCalculator'
 
 interface Props {
   analysis: AnalysisResult
   parseResult: ParseResult
+  timeZone: string
   onReset: () => void
   onAddFiles: () => void
 }
 
-export function Dashboard({ analysis, parseResult, onReset, onAddFiles }: Props) {
+export function Dashboard({ analysis, parseResult, timeZone, onReset, onAddFiles }: Props) {
   return (
     <main className="dashboard-shell">
       <div className="dashboard-topbar">
@@ -27,6 +29,7 @@ export function Dashboard({ analysis, parseResult, onReset, onAddFiles }: Props)
 
       <SummaryCards analysis={analysis} />
       <Charts analysis={analysis} />
+      <PricingCalculator readings={parseResult.readings} timeZone={timeZone} />
       <DataQuality result={parseResult} />
     </main>
   )

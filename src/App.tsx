@@ -97,6 +97,7 @@ export default function App() {
         <Dashboard
           analysis={analysis}
           parseResult={parseResult}
+          timeZone={config.timeZone}
           onReset={reset}
           onAddFiles={() => setPhase('import')}
         />
