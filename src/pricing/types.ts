@@ -2,8 +2,8 @@ export type PriceBasis = 'net' | 'gross'
 
 export interface TariffRule {
   id: string
-  fromMonth: number
-  toMonth: number
+  fromDate: string
+  toDate: string
   startTime: string
   endTime: string
   centsPerKwh: number
@@ -25,16 +25,16 @@ export const defaultPricingConfig: PricingConfig = {
   rules: [
     {
       id: 'winter-daytime',
-      fromMonth: 11,
-      toMonth: 4,
+      fromDate: '01.11',
+      toDate: '30.04',
       startTime: '10:00',
       endTime: '16:00',
       centsPerKwh: 9.9,
     },
     {
       id: 'summer-daytime',
-      fromMonth: 5,
-      toMonth: 10,
+      fromDate: '01.05',
+      toDate: '31.10',
       startTime: '10:00',
       endTime: '16:00',
       centsPerKwh: 4.99,

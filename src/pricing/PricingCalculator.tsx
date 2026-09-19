@@ -2,13 +2,8 @@ import { Calculator, CirclePlus, Info, ReceiptText, ShieldCheck, Trash2 } from '
 import { useMemo, useState } from 'react'
 import type { Reading } from '../domain/types'
 import { numberFormat } from '../shared/formatters'
-import { calculatePricing } from './calculatePricing'
+import { calculatePricing, parseRecurringDate } from './calculatePricing'
 import { defaultPricingConfig, type PricingConfig, type TariffRule } from './types'
-
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
 
 const currency = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -44,7 +39,7 @@ export function PricingCalculator({ readings, timeZone }: Props) {
   function addRule() {
     update('rules', [
       ...config.rules,
-      { id: nextRuleId(), fromMonth: 1, toMonth: 12, startTime: '00:00', endTime: '00:00', centsPerKwh: 10 },
+      { id: nextRuleId(), fromDate: '01.01', toDate: '31.12', startTime: '00:00', endTime: '00:00', centsPerKwh: 10 },
     ])
   }
 
@@ -110,16 +105,31 @@ export function PricingCalculator({ readings, timeZone }: Props) {
                 </div>
                 <div className="tariff-rule-fields">
                   <label>
-                    <span>Months</span>
+                    <span>Date range</span>
                     <div className="range-fields">
-                      <select aria-label={`Price ${index + 1} from month`} value={rule.fromMonth} onChange={(event) => updateRule(rule.id, 'fromMonth', Number(event.target.value))}>
-                        {MONTHS.map((month, monthIndex) => <option value={monthIndex + 1} key={month}>{month.slice(0, 3)}</option>)}
-                      </select>
+                      <input
+                        aria-label={`Price ${index + 1} from date`}
+                        aria-invalid={!parseRecurringDate(rule.fromDate)}
+                        className={!parseRecurringDate(rule.fromDate) ? 'invalid-field' : ''}
+                        inputMode="numeric"
+                        placeholder="DD.MM"
+                        value={rule.fromDate}
+                        onChange={(event) => updateRule(rule.id, 'fromDate', event.target.value)}
+                      />
                       <small>to</small>
-                      <select aria-label={`Price ${index + 1} to month`} value={rule.toMonth} onChange={(event) => updateRule(rule.id, 'toMonth', Number(event.target.value))}>
-                        {MONTHS.map((month, monthIndex) => <option value={monthIndex + 1} key={month}>{month.slice(0, 3)}</option>)}
-                      </select>
+                      <input
+                        aria-label={`Price ${index + 1} to date`}
+                        aria-invalid={!parseRecurringDate(rule.toDate)}
+                        className={!parseRecurringDate(rule.toDate) ? 'invalid-field' : ''}
+                        inputMode="numeric"
+                        placeholder="DD.MM"
+                        value={rule.toDate}
+                        onChange={(event) => updateRule(rule.id, 'toDate', event.target.value)}
+                      />
                     </div>
+                    <small className={`date-format-help ${!parseRecurringDate(rule.fromDate) || !parseRecurringDate(rule.toDate) ? 'error' : ''}`}>
+                      {!parseRecurringDate(rule.fromDate) || !parseRecurringDate(rule.toDate) ? 'Enter valid dates as DD.MM' : 'DD.MM · repeats yearly'}
+                    </small>
                   </label>
                   <label>
                     <span>Time</span>
@@ -144,7 +154,7 @@ export function PricingCalculator({ readings, timeZone }: Props) {
             <div className="input-with-unit"><input aria-label="Fallback cents per kilowatt-hour" type="number" min="0" step="0.01" value={config.fallbackCentsPerKwh} onChange={(event) => update('fallbackCentsPerKwh', Number(event.target.value))} /><span>c/kWh</span></div>
           </label>
 
-          <div className="pricing-help"><Info size={14} /><span>End times are exclusive. Equal start and end times mean all day. Overnight bands and seasons crossing New Year are supported.</span></div>
+          <div className="pricing-help"><Info size={14} /><span>Date ranges are inclusive and repeat yearly. End times are exclusive. Equal start and end times mean all day. Overnight bands and date ranges crossing New Year are supported.</span></div>
         </form>
 
         <aside className="pricing-result" aria-live="polite">

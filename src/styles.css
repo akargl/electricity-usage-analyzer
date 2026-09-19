@@ -212,10 +212,13 @@ footer p:last-child { text-align: right; }
 .tariff-rule-top strong { font-size: 10px; }
 .remove-rate { width: 27px; height: 27px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #8b9692; cursor: pointer; }
 .remove-rate:hover { color: var(--danger); background: #f4e9e5; }
-.tariff-rule-fields { display: grid; grid-template-columns: 1.25fr 1.4fr .8fr; gap: 12px; align-items: end; }
+.tariff-rule-fields { display: grid; grid-template-columns: 1.25fr 1.4fr .8fr; gap: 12px; align-items: start; }
 .range-fields { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 5px; }
 .range-fields small { color: #87928e; font-size: 8px; }
 .range-fields input, .range-fields select { width: 100%; }
+.pricing-form input.invalid-field { border-color: #c47769; background: #fff8f6; }
+.date-format-help { display: block; margin-top: 5px; color: #87928e; font-size: 8px; font-weight: 450; }
+.date-format-help.error { color: var(--danger); }
 .no-rules { padding: 18px; border: 1px dashed #cbd4ce; border-radius: 8px; color: var(--muted); text-align: center; font-size: 10px; }
 .fallback-price { margin-top: 10px !important; padding: 12px 13px !important; display: flex; align-items: center; justify-content: space-between; gap: 18px; border: 1px solid #ced9d3 !important; border-radius: 9px; background: #edf3ee; }
 .fallback-price > span { display: flex !important; flex-direction: column; gap: 3px; margin: 0 !important; }

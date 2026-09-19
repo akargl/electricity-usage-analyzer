@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
 import { describe, expect, it } from 'vitest'
 import type { Reading } from '../domain/types'
-import { calculatePricing, monthMatches, timeMatches } from './calculatePricing'
+import { calculatePricing, dateMatches, parseRecurringDate, timeMatches } from './calculatePricing'
 import type { PricingConfig } from './types'
 
 const config: PricingConfig = {
@@ -10,8 +10,8 @@ const config: PricingConfig = {
   priceBasis: 'net',
   taxPercent: 20,
   rules: [
-    { id: 'winter', fromMonth: 11, toMonth: 4, startTime: '10:00', endTime: '16:00', centsPerKwh: 9.9 },
-    { id: 'summer', fromMonth: 5, toMonth: 10, startTime: '10:00', endTime: '16:00', centsPerKwh: 4.99 },
+    { id: 'winter', fromDate: '01.11', toDate: '30.04', startTime: '10:00', endTime: '16:00', centsPerKwh: 9.9 },
+    { id: 'summer', fromDate: '01.05', toDate: '31.10', startTime: '10:00', endTime: '16:00', centsPerKwh: 4.99 },
   ],
 }
 
@@ -20,10 +20,18 @@ function reading(iso: string, valueKwh: number): Reading {
 }
 
 describe('tariff matching', () => {
-  it('supports seasons that wrap across the end of the year', () => {
-    expect(monthMatches(12, 11, 4)).toBe(true)
-    expect(monthMatches(2, 11, 4)).toBe(true)
-    expect(monthMatches(7, 11, 4)).toBe(false)
+  it('supports inclusive dates that wrap across the end of the year', () => {
+    expect(dateMatches(DateTime.fromISO('2026-11-01'), '01.11', '30.04')).toBe(true)
+    expect(dateMatches(DateTime.fromISO('2027-04-30'), '01.11', '30.04')).toBe(true)
+    expect(dateMatches(DateTime.fromISO('2027-05-01'), '01.11', '30.04')).toBe(false)
+    expect(dateMatches(DateTime.fromISO('2026-10-31'), '01.11', '30.04')).toBe(false)
+  })
+
+  it('accepts flexible day formatting and rejects impossible dates', () => {
+    expect(parseRecurringDate('1.11')).toMatchObject({ day: 1, month: 11 })
+    expect(parseRecurringDate('29.02')).not.toBeNull()
+    expect(parseRecurringDate('31.04')).toBeNull()
+    expect(parseRecurringDate('not-a-date')).toBeNull()
   })
 
   it('supports ordinary and overnight time bands', () => {

@@ -13,10 +13,30 @@ function timeInMinutes(value: string) {
   return Number(hours) * 60 + Number(minutes)
 }
 
-export function monthMatches(month: number, fromMonth: number, toMonth: number) {
-  return fromMonth <= toMonth
-    ? month >= fromMonth && month <= toMonth
-    : month >= fromMonth || month <= toMonth
+export interface RecurringDate {
+  day: number
+  month: number
+  key: number
+}
+
+export function parseRecurringDate(value: string): RecurringDate | null {
+  const match = value.trim().match(/^(\d{1,2})[.\-/](\d{1,2})$/)
+  if (!match) return null
+  const day = Number(match[1])
+  const month = Number(match[2])
+  const candidate = DateTime.local(2000, month, day)
+  if (!candidate.isValid || candidate.day !== day || candidate.month !== month) return null
+  return { day, month, key: month * 100 + day }
+}
+
+export function dateMatches(dateTime: DateTime, fromDate: string, toDate: string) {
+  const from = parseRecurringDate(fromDate)
+  const to = parseRecurringDate(toDate)
+  if (!from || !to) return false
+  const current = dateTime.month * 100 + dateTime.day
+  return from.key <= to.key
+    ? current >= from.key && current <= to.key
+    : current >= from.key || current <= to.key
 }
 
 export function timeMatches(minutes: number, startTime: string, endTime: string) {
@@ -30,14 +50,16 @@ export function timeMatches(minutes: number, startTime: string, endTime: string)
 
 export function ruleMatches(dateTime: DateTime, rule: TariffRule) {
   const minutes = dateTime.hour * 60 + dateTime.minute
-  return monthMatches(dateTime.month, rule.fromMonth, rule.toMonth)
+  return dateMatches(dateTime, rule.fromDate, rule.toDate)
     && timeMatches(minutes, rule.startTime, rule.endTime)
 }
 
 export function tariffRuleLabel(rule: TariffRule) {
-  const season = rule.fromMonth === rule.toMonth
-    ? MONTHS[rule.fromMonth - 1]
-    : `${MONTHS[rule.fromMonth - 1]}–${MONTHS[rule.toMonth - 1]}`
+  const from = parseRecurringDate(rule.fromDate)
+  const to = parseRecurringDate(rule.toDate)
+  if (!from || !to) return `Invalid date range · ${rule.startTime}–${rule.endTime}`
+  const format = (date: RecurringDate) => `${String(date.day).padStart(2, '0')} ${MONTHS[date.month - 1]}`
+  const season = `${format(from)}–${format(to)}`
   return `${season} · ${rule.startTime}–${rule.endTime}`
 }
 
