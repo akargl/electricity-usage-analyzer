@@ -1,10 +1,11 @@
 import { Calculator, CirclePlus, Info, ReceiptText, ShieldCheck, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import type { Reading } from '../domain/types'
 import { numberFormat } from '../shared/formatters'
 import { parseRecurringDate } from './calculatePricing'
 import { createPricingResultCache } from './pricingCache'
-import { defaultPricingConfig, type PricingConfig, type TariffRule } from './types'
+import type { PricingConfig, TariffPlan, TariffRule } from './types'
 
 const currency = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -16,27 +17,14 @@ const currency = new Intl.NumberFormat(undefined, {
 interface Props {
   readings: Reading[]
   timeZone: string
-}
-
-interface TariffPlan {
-  id: string
-  name: string
-  config: PricingConfig
+  tariffs: TariffPlan[]
+  setTariffs: Dispatch<SetStateAction<TariffPlan[]>>
+  selectedTariffId: string
+  setSelectedTariffId: Dispatch<SetStateAction<string>>
 }
 
 function nextRuleId() {
   return `rate-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-}
-
-function initialTariff(): TariffPlan {
-  return {
-    id: 'tariff-1',
-    name: 'Tariff 1',
-    config: {
-      ...defaultPricingConfig,
-      rules: defaultPricingConfig.rules.map((rule) => ({ ...rule })),
-    },
-  }
 }
 
 interface TariffNameFieldProps {
@@ -68,9 +56,14 @@ function TariffNameField({ name, onCommit }: TariffNameFieldProps) {
   )
 }
 
-export function PricingCalculator({ readings, timeZone }: Props) {
-  const [tariffs, setTariffs] = useState<TariffPlan[]>(() => [initialTariff()])
-  const [selectedTariffId, setSelectedTariffId] = useState('tariff-1')
+export function PricingCalculator({
+  readings,
+  timeZone,
+  tariffs,
+  setTariffs,
+  selectedTariffId,
+  setSelectedTariffId,
+}: Props) {
   const getPricingResult = useMemo(() => createPricingResultCache(readings, timeZone), [readings, timeZone])
   const tariffResults = tariffs.map((tariff) => ({ tariff, result: getPricingResult(tariff.config) }))
   const selectedTariff = tariffs.find((tariff) => tariff.id === selectedTariffId) ?? tariffs[0]

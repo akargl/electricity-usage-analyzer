@@ -1,5 +1,7 @@
 import { ArrowLeft, Plus } from 'lucide-react'
+import type { Dispatch, SetStateAction } from 'react'
 import type { AnalysisResult, ParseResult } from '../domain/types'
+import type { TariffPlan } from '../pricing/types'
 import { Charts } from './Charts'
 import { DataQuality } from './DataQuality'
 import { SummaryCards } from './SummaryCards'
@@ -9,11 +11,25 @@ interface Props {
   analysis: AnalysisResult
   parseResult: ParseResult
   timeZone: string
+  tariffs: TariffPlan[]
+  setTariffs: Dispatch<SetStateAction<TariffPlan[]>>
+  selectedTariffId: string
+  setSelectedTariffId: Dispatch<SetStateAction<string>>
   onReset: () => void
   onAddFiles: () => void
 }
 
-export function Dashboard({ analysis, parseResult, timeZone, onReset, onAddFiles }: Props) {
+export function Dashboard({
+  analysis,
+  parseResult,
+  timeZone,
+  tariffs,
+  setTariffs,
+  selectedTariffId,
+  setSelectedTariffId,
+  onReset,
+  onAddFiles,
+}: Props) {
   return (
     <main className="dashboard-shell">
       <div className="dashboard-topbar">
@@ -29,7 +45,14 @@ export function Dashboard({ analysis, parseResult, timeZone, onReset, onAddFiles
 
       <SummaryCards analysis={analysis} />
       <Charts analysis={analysis} />
-      <PricingCalculator readings={parseResult.readings} timeZone={timeZone} />
+      <PricingCalculator
+        readings={parseResult.readings}
+        timeZone={timeZone}
+        tariffs={tariffs}
+        setTariffs={setTariffs}
+        selectedTariffId={selectedTariffId}
+        setSelectedTariffId={setSelectedTariffId}
+      />
       <DataQuality result={parseResult} />
     </main>
   )

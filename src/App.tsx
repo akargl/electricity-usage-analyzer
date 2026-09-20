@@ -4,6 +4,7 @@ import { defaultImportConfig, type ImportConfig, type ParseResult, type WorkerRe
 import { FileDropzone } from './import/FileDropzone'
 import { FilePreview } from './import/FilePreview'
 import { ImportSettings } from './import/ImportSettings'
+import { createDefaultTariffPlan, type TariffPlan } from './pricing/types'
 import { aggregateReadings } from './processing/aggregate'
 
 type Phase = 'import' | 'processing' | 'dashboard'
@@ -36,6 +37,8 @@ export default function App() {
   const [progress, setProgress] = useState('Preparing files…')
   const [error, setError] = useState<string | null>(null)
   const [parseResult, setParseResult] = useState<ParseResult | null>(null)
+  const [tariffs, setTariffs] = useState<TariffPlan[]>(() => [createDefaultTariffPlan()])
+  const [selectedTariffId, setSelectedTariffId] = useState('tariff-1')
   const workerRef = useRef<Worker | null>(null)
 
   const analysis = useMemo(
@@ -87,6 +90,8 @@ export default function App() {
     workerRef.current = null
     setFiles([])
     setParseResult(null)
+    setTariffs([createDefaultTariffPlan()])
+    setSelectedTariffId('tariff-1')
     setError(null)
     setPhase('import')
   }
@@ -98,6 +103,10 @@ export default function App() {
           analysis={analysis}
           parseResult={parseResult}
           timeZone={config.timeZone}
+          tariffs={tariffs}
+          setTariffs={setTariffs}
+          selectedTariffId={selectedTariffId}
+          setSelectedTariffId={setSelectedTariffId}
           onReset={reset}
           onAddFiles={() => setPhase('import')}
         />

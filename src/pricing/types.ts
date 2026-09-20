@@ -17,6 +17,12 @@ export interface PricingConfig {
   rules: TariffRule[]
 }
 
+export interface TariffPlan {
+  id: string
+  name: string
+  config: PricingConfig
+}
+
 export const defaultPricingConfig: PricingConfig = {
   basePricePerMonth: 0,
   fallbackCentsPerKwh: 13.9,
@@ -40,6 +46,17 @@ export const defaultPricingConfig: PricingConfig = {
       centsPerKwh: 4.99,
     },
   ],
+}
+
+export function createDefaultTariffPlan(): TariffPlan {
+  return {
+    id: 'tariff-1',
+    name: 'Tariff 1',
+    config: {
+      ...defaultPricingConfig,
+      rules: defaultPricingConfig.rules.map((rule) => ({ ...rule })),
+    },
+  }
 }
 
 export interface TariffAllocation {
