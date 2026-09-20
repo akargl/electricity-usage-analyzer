@@ -24,9 +24,9 @@ export function FileDropzone({ files, onFiles, onSample }: Props) {
       <div className="section-heading">
         <div>
           <h2 id="upload-title">Bring your readings</h2>
-          <p>Add one or more CSV exports. They never leave this browser.</p>
+          <p>Add one or more CSV usage exports from your electricity provider</p>
         </div>
-        <div className="privacy-badge"><LockKeyhole size={14} /> Local only</div>
+        <div className="privacy-badge"><LockKeyhole size={14} /> All data is processed locally in your browser</div>
       </div>
 
       <div
@@ -79,7 +79,7 @@ export function FileDropzone({ files, onFiles, onSample }: Props) {
 
       {files.length === 0 && (
         <button className="sample-link" type="button" onClick={onSample}>
-          <Sparkles size={15} /> No CSV nearby? Explore with realistic sample data
+          <Sparkles size={15} /> No usage reports at hand? Explore with some sample data
         </button>
       )}
     </section>

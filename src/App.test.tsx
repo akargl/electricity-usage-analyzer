@@ -5,8 +5,8 @@ import App from './App'
 describe('App', () => {
   it('introduces the private CSV import workflow', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { name: /see where yourenergy goes/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /analyze your power/i })).toBeInTheDocument()
     expect(screen.getByText(/drop csv files here/i)).toBeInTheDocument()
-    expect(screen.getByText(/100% private/i)).toBeInTheDocument()
+    expect(screen.getByText(/all data is processed locally/i)).toBeInTheDocument()
   })
 })

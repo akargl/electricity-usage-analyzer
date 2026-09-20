@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, ShieldCheck, Zap } from 'lucide-react'
+import { ArrowRight, ShieldCheck, Zap } from 'lucide-react'
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { defaultImportConfig, type ImportConfig, type ParseResult, type WorkerResponse } from './domain/types'
 import { FileDropzone } from './import/FileDropzone'
@@ -109,15 +109,12 @@ export default function App() {
     <div className="site-shell">
       <nav className="site-nav" aria-label="Main navigation">
         <a className="brand" href="#top" aria-label="Current home"><span><Zap size={18} fill="currentColor" /></span>Current</a>
-        <div className="nav-note"><ShieldCheck size={15} /> 100% private · browser-based</div>
       </nav>
 
       <main id="top" className="import-main">
         <header className="hero">
-          <div className="eyebrow"><span /> Electricity usage analyzer</div>
-          <h1>See where your<br /><em>energy goes.</em></h1>
-          <p>Turn raw meter exports into clear daily and hourly patterns—privately, right in your browser.</p>
-          <div className="hero-points"><span><Activity size={15} /> Multiple files</span><span>·</span><span>Missing-data aware</span><span>·</span><span>No upload</span></div>
+          <h1>Analyze your <br /><em>power.</em></h1>
+          <p>Turn raw meter exports into clear daily and hourly patterns and find out which tariff suits you best.</p>
         </header>
 
         <div className="import-card">
@@ -138,7 +135,7 @@ export default function App() {
         </div>
       </main>
 
-      <footer><span>Current</span><p>Your readings stay yours.</p><p>Built for clarity, not the cloud.</p></footer>
+      {/*<footer><span>Current</span><p>Your readings stay yours.</p><p>Built for clarity, not the cloud.</p></footer>*/}
 
       {phase === 'processing' && (
         <div className="processing-overlay" role="status" aria-live="polite">

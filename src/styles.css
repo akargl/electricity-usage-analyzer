@@ -48,8 +48,6 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .hero h1, .dashboard-header h1 { margin: 17px 0 20px; font-size: clamp(48px, 7vw, 78px); line-height: .98; letter-spacing: -.065em; font-weight: 660; }
 .hero h1 em, .dashboard-header h1 em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; color: #608b7f; }
 .hero > p { max-width: 600px; margin: 0 auto; color: var(--muted); font-size: 17px; line-height: 1.65; }
-.hero-points { margin-top: 22px; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; color: #7c8984; font-size: 12px; }
-.hero-points span { display: inline-flex; align-items: center; gap: 5px; }
 
 .import-card { border: 1px solid rgba(23, 59, 54, .15); background: rgba(252, 251, 247, .88); border-radius: 18px; padding: 38px; box-shadow: 0 24px 65px rgba(41, 61, 54, .07); backdrop-filter: blur(12px); }
 .section-kicker { color: #78928a; font-size: 10px; text-transform: uppercase; letter-spacing: .2em; font-weight: 800; margin-bottom: 11px; }
@@ -304,7 +302,6 @@ footer p:last-child { text-align: right; }
   .import-main { padding: 53px 16px 75px; }
   .hero { margin-bottom: 36px; }
   .hero h1 { font-size: 48px; }
-  .hero-points span:nth-child(even) { display: none; }
   .import-card { padding: 23px 18px; border-radius: 14px; }
   .section-heading { flex-direction: column; }
   .privacy-badge { align-self: flex-start; }
