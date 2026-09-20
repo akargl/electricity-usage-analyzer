@@ -128,10 +128,10 @@ footer span { font-size: 14px; color: var(--ink); font-weight: 750; }
 footer p:last-child { text-align: right; }
 
 .processing-overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px; background: rgba(245, 243, 236, .86); backdrop-filter: blur(9px); }
-.processing-card { width: min(410px, 100%); text-align: center; border-radius: 16px; border: 1px solid #ccd5ce; background: var(--paper); padding: 42px 37px; box-shadow: 0 26px 70px rgba(29, 54, 47, .14); }
+.processing-card { width: min(410px, 100%); min-width: 0; max-height: calc(100dvh - 48px); overflow-y: auto; text-align: center; border-radius: 16px; border: 1px solid #ccd5ce; background: var(--paper); padding: 42px 37px; box-shadow: 0 26px 70px rgba(29, 54, 47, .14); }
 .pulse-logo { width: 55px; height: 55px; margin: 0 auto 20px; border-radius: 50%; display: grid; place-items: center; color: var(--lime); background: var(--ink); animation: pulse 1.7s ease-in-out infinite; }
 .processing-card h2 { margin: 0 0 8px; font-size: 26px; letter-spacing: -.04em; }
-.processing-card p { color: var(--muted); font-size: 12px; }
+.processing-card p { max-width: 100%; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; word-break: break-word; }
 .processing-card small { color: #8b9692; font-size: 10px; }
 .progress-track { height: 4px; margin: 25px 0 13px; border-radius: 99px; overflow: hidden; background: #e6eae3; }
 .progress-track span { display: block; height: 100%; width: 43%; border-radius: inherit; background: var(--sage); animation: progress 1.5s ease-in-out infinite; }
@@ -297,6 +297,8 @@ footer p:last-child { text-align: right; }
 }
 
 @media (max-width: 560px) {
+  .processing-overlay { padding: 16px; }
+  .processing-card { max-height: calc(100dvh - 32px); padding: 32px 20px; }
   .site-nav { height: 64px; padding: 0 18px; }
   .nav-note { font-size: 0; }
   .import-main { padding: 53px 16px 75px; }
