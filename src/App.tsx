@@ -1,5 +1,5 @@
 import { ArrowRight, ShieldCheck, Zap } from 'lucide-react'
-import { lazy, Suspense, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { defaultImportConfig, type ImportConfig, type ParseResult, type WorkerResponse } from './domain/types'
 import { FileDropzone } from './import/FileDropzone'
 import { FilePreview } from './import/FilePreview'
@@ -39,7 +39,14 @@ export default function App() {
   const [parseResult, setParseResult] = useState<ParseResult | null>(null)
   const [tariffs, setTariffs] = useState<TariffPlan[]>(() => [createDefaultTariffPlan()])
   const [selectedTariffId, setSelectedTariffId] = useState('tariff-1')
+  const [showImprint, setShowImprint] = useState(() => window.location.hash === '#imprint')
   const workerRef = useRef<Worker | null>(null)
+
+  useEffect(() => {
+    const updateFromHash = () => setShowImprint(window.location.hash === '#imprint')
+    window.addEventListener('hashchange', updateFromHash)
+    return () => window.removeEventListener('hashchange', updateFromHash)
+  }, [])
 
   const analysis = useMemo(
     () => parseResult ? aggregateReadings(parseResult.readings, config.timeZone) : null,
@@ -96,21 +103,33 @@ export default function App() {
     setPhase('import')
   }
 
+  if (showImprint) {
+    return (
+      <div className="site-shell">
+        <ImprintPage />
+        <SiteFooter />
+      </div>
+    )
+  }
+
   if (phase === 'dashboard' && parseResult && analysis) {
     return (
-      <Suspense fallback={<LoadingDashboard />}>
-        <Dashboard
-          analysis={analysis}
-          parseResult={parseResult}
-          timeZone={config.timeZone}
-          tariffs={tariffs}
-          setTariffs={setTariffs}
-          selectedTariffId={selectedTariffId}
-          setSelectedTariffId={setSelectedTariffId}
-          onReset={reset}
-          onAddFiles={() => setPhase('import')}
-        />
-      </Suspense>
+      <div className="site-shell">
+        <Suspense fallback={<LoadingDashboard />}>
+          <Dashboard
+            analysis={analysis}
+            parseResult={parseResult}
+            timeZone={config.timeZone}
+            tariffs={tariffs}
+            setTariffs={setTariffs}
+            selectedTariffId={selectedTariffId}
+            setSelectedTariffId={setSelectedTariffId}
+            onReset={reset}
+            onAddFiles={() => setPhase('import')}
+          />
+        </Suspense>
+        <SiteFooter />
+      </div>
     )
   }
 
@@ -144,7 +163,7 @@ export default function App() {
         </div>
       </main>
 
-      {/*<footer><span>Current</span><p>Your readings stay yours.</p><p>Built for clarity, not the cloud.</p></footer>*/}
+      <SiteFooter />
 
       {phase === 'processing' && (
         <div className="processing-overlay" role="status" aria-live="polite">
@@ -158,6 +177,29 @@ export default function App() {
         </div>
       )}
     </div>
+  )
+}
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer">
+      <a href="#imprint">Imprint</a>
+    </footer>
+  )
+}
+
+function ImprintPage() {
+  return (
+    <main className="imprint-page" id="imprint">
+      <a className="imprint-back" href="#top">← Back to the analyzer</a>
+      <h1>Imprint</h1>
+      <p className="imprint-subtitle">Disclosure under Section 25 of the Austrian Media Act</p>
+      <dl>
+        <div><dt>Media owner</dt><dd>Alexander Kargl</dd></div>
+        <div><dt>Place of residence</dt><dd>Graz, Austria</dd></div>
+        <div><dt>Purpose of this website</dt><dd>Analysis of electricity usage and comparison of energy tariffs.</dd></div>
+      </dl>
+    </main>
   )
 }
 

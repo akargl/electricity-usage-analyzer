@@ -31,7 +31,7 @@ export function Dashboard({
   onAddFiles,
 }: Props) {
   return (
-    <main className="dashboard-shell">
+    <main className="dashboard-shell" id="top">
       <div className="dashboard-topbar">
         <button className="back-button" type="button" onClick={onReset}><ArrowLeft size={17} /> New analysis</button>
         <div className="dashboard-actions"><span>{parseResult.files.length} {parseResult.files.length === 1 ? 'file' : 'files'} analyzed</span><button className="button secondary compact" type="button" onClick={onAddFiles}><Plus size={15} /> Add files</button></div>
